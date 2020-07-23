@@ -3,15 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www"
+    "start": "node ./bin/www"
   },
   "dependencies": {
+    "argon2": "^0.26.2",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "^4.16.4",
     "http-errors": "^1.6.3",
     "jade": "~1.11.0",
+    "knex": "^0.21.2",
     "morgan": "^1.9.1",
+    "mysql2": "^2.1.0",
     "react-bootstrap": "^1.2.2",
     "react-router-dom": "^5.2.0"
   },

@@ -9,6 +9,7 @@ export default class login extends Component {
       email: "",
       password: ""
     };
+
   }
 
   handleEmail = (event) => {
@@ -64,7 +65,7 @@ export default class login extends Component {
                     <Form.Control
                       type="email"
                       placeholder="Email"
-                      value={this.state.email}
+                      // value={this.state.email}
                       onChange={this.handleEmail}
                     />
                   </Col>
@@ -77,7 +78,7 @@ export default class login extends Component {
                     <Form.Control
                       type="password"
                       placeholder="Password"
-                      value={this.state.password}
+                      // value={this.state.password}
                       onChange={this.handlePassword}
                     />
                   </Col>

@@ -1,5 +1,19 @@
 const dbConn = require('../db/portfolio');
 const argon2 = require('argon2');
+var validator = require("email-validator");
+var passwordValidator = require('password-validator');
+var schema = new passwordValidator();
+
+/**password properties or rejection rules */
+schema
+    .is().min(6)                                    // Minimum length 6
+    .is().max(100)                                  // Maximum length 100
+    .has().uppercase()                              // Must have uppercase letters
+    .has().lowercase()                              // Must have lowercase letters
+    .has().digits()                                 // Must have digits
+    .has().not().spaces()                           // Should not have spaces
+    .is().not().oneOf(['Passw0rd', 'Password123', 'Password']) // Blacklist these values
+    .has().symbols();                               // Should have Special Characters
 
 
 function errorHandler(err) {
@@ -49,36 +63,53 @@ async function registerUser(userData) {
                     } else {
                         let salt = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
                         let verifiedSalt = await verifyUniqueSalt(salt);
-                        await dbConn('users').insert([{
-                            username: userData.username,
-                            password: await argon2.hash(userData.password + verifiedSalt),
-                            salt: verifiedSalt,
-                            role: userData.role
-                        }]).then(async (userId) => {
-                            await dbConn('user_details').insert([{
-                                userId: userId,
-                                firstName: userData.firstName,
-                                lastName: !userData.lastName ? null : userData.lastName,
-                                phone: userData.phone,
-                                address: userData.address,
-                                city: userData.city,
-                                state: userData.state,
-                                country: userData.country,
-                                postalCode: userData.postalCode,
-                                alternateEmail: userData.alternateEmail
-                            }]).then(() => {
-                                resolve({
-                                    status: 200,
-                                    message: 'User registered Succesfully'
-                                });
+                        let usernameValidated = validator.validate(userData.username);
+                        let passwordValidated = schema.validate(userData.password);
+                        let alternateEmailValidated = validator.validate(userData.alternateEmail);
+                        if (!usernameValidated || !passwordValidated || !alternateEmailValidated || (userData.alternateEmail.toLowerCase() === userData.username.toLowerCase())) {
+                            resolve({
+                                status: 403,
+                                message: {
+                                    reason: 'Username or Password Error',
+                                    error: {
+                                        username: !usernameValidated ? 'Invalid Email or Username' : null,
+                                        password: !passwordValidated ? 'Password Requirements not met' : null,
+                                        alternateEmail: (!alternateEmailValidated || (userData.alternateEmail.toLowerCase() === userData.username.toLowerCase())) ? 'Please enter valid email different than username' : null
+                                    }
+                                }
+                            });
+                        } else {
+                            await dbConn('users').insert([{
+                                username: userData.username,
+                                password: await argon2.hash(userData.password + verifiedSalt),
+                                salt: verifiedSalt,
+                                role: userData.role
+                            }]).then(async (userId) => {
+                                await dbConn('user_details').insert([{
+                                    userId: userId,
+                                    firstName: userData.firstName,
+                                    lastName: !userData.lastName ? null : userData.lastName,
+                                    phone: userData.phone,
+                                    address: userData.address,
+                                    city: userData.city,
+                                    state: userData.state,
+                                    country: userData.country,
+                                    postalCode: userData.postalCode,
+                                    alternateEmail: userData.alternateEmail
+                                }]).then(() => {
+                                    resolve({
+                                        status: 200,
+                                        message: 'User registered Succesfully'
+                                    });
+                                }).catch(err => {
+                                    console.log('Error logging User_details --->', err);
+                                    return (errorHandler(err));
+                                })
                             }).catch(err => {
-                                console.log('Error logging User_details --->', err);
+                                console.log('Error logging User to DB --->', err);
                                 return (errorHandler(err));
-                            })
-                        }).catch(err => {
-                            console.log('Error logging User to DB --->', err);
-                            return (errorHandler(err));
-                        });
+                            });
+                        }
                     }
                 });
         }
@@ -90,7 +121,7 @@ async function registerUser(userData) {
 
 
 async function verifyUniqueSalt(salt) {
-    return new Promise (async (resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         await dbConn.select('id').from('users').where('salt', salt)
             .then(async (saltExists) => {
                 if (saltExists.length !== 0) {

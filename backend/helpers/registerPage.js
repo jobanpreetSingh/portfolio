@@ -37,7 +37,7 @@ async function registerUser(userData) {
                         username: (!userData.username || (userData.username.toLowerCase() !== userData.verifyUsername.toLowerCase())) ? 'Username not entered or not matching' : null,
                         password: (!userData.password || userData.password !== userData.verifyPassword) ? 'Password not entered or mismatching' : null,
                         firstName: !userData.firstName ? 'Please enter firstName' : null,
-                        lastName: !userData.lastName ? 'Please enter lastName' : null,
+                        phone: !userData.phone ? 'Phone Number is required' : null,
                         address: !userData.address ? 'Address details required' : null,
                         city: !userData.city ? 'City is required' : null,
                         state: !userData.state ? 'State is required' : null,

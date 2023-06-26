@@ -1,0 +1,27 @@
+# Ignore Node.js related files and directories
+node_modules/
+.next/
+
+# Ignore IDE-specific files
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.idea/
+*.iml
+.DS_Store
+
+# Ignore build artifacts
+/out/
+/.next/
+/dist/
+/public/
+
+# Ignore environment-specific files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore miscellaneous files
+*.log
+*.bak
